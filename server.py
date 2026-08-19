@@ -160,7 +160,8 @@ def execute_antigravity_sync(
     sub_path: str = "",
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     model: str = DEFAULT_MODEL,
-    effort: str = DEFAULT_EFFORT
+    effort: str = DEFAULT_EFFORT,
+    dangerously_skip_permissions: bool = AUTO_APPROVE
 ) -> str:
     """Executes a coding, debugging, or automation task synchronously via Antigravity / Gemini Sub-Agent.
     
@@ -170,19 +171,20 @@ def execute_antigravity_sync(
         timeout_seconds: Maximum execution time before timeout (default from env: 300s).
         model: The Gemini model to use for the sub-agent (default from env: 'gemini-3.7-flash').
         effort: Reasoning effort for the session ('low', 'medium', 'high').
+        dangerously_skip_permissions: If True, grants the sub-agent full autonomy to write files and execute shell commands without interactive permission checks (YOLO mode).
     
     Returns:
         The text output/log and summary of the completed task.
     """
     cwd = sanitize_workspace_path(sub_path)
     os.makedirs(cwd, exist_ok=True)
-    logger.info(f"Executing sync Antigravity task in '{cwd}': {prompt[:100]}...")
+    logger.info(f"Executing sync Antigravity task in '{cwd}' (dangerously_skip_permissions={dangerously_skip_permissions}): {prompt[:100]}...")
 
     # If 'agy' CLI binary is installed, invoke agy with non-interactive and auto-approval flags
     agy_path = shutil.which("agy") or ("/root/.local/bin/agy" if os.path.exists("/root/.local/bin/agy") else None)
     if agy_path:
         cmd = [agy_path, "-p", prompt]
-        if AUTO_APPROVE:
+        if dangerously_skip_permissions:
             cmd.append("--dangerously-skip-permissions")
         if model:
             cmd.extend(["--model", model])
@@ -215,14 +217,18 @@ def execute_antigravity_sync(
 def start_antigravity_async(
     prompt: str,
     sub_path: str = "",
-    model: str = DEFAULT_MODEL
+    model: str = DEFAULT_MODEL,
+    effort: str = DEFAULT_EFFORT,
+    dangerously_skip_permissions: bool = AUTO_APPROVE
 ) -> str:
     """Dispatches a long-running Antigravity / Gemini Sub-Agent task in the background.
     
     Args:
         prompt: The task instruction or coding goal.
         sub_path: Optional sub-directory path inside /workspace to execute within.
-        model: The Gemini model to use (default: 'gemini-3.7-flash').
+        model: The Gemini model to use (default from env: 'gemini-3.7-flash').
+        effort: Reasoning effort for the session ('low', 'medium', 'high').
+        dangerously_skip_permissions: If True, grants the sub-agent full autonomy to write files and execute shell commands without interactive prompts (YOLO mode).
         
     Returns:
         An 8-character task_id to inspect with get_antigravity_task_status.
@@ -230,7 +236,7 @@ def start_antigravity_async(
     task_id = str(uuid.uuid4())[:8]
     cwd = sanitize_workspace_path(sub_path)
     os.makedirs(cwd, exist_ok=True)
-    logger.info(f"Launching async sub-agent task '{task_id}' in '{cwd}': {prompt[:100]}...")
+    logger.info(f"Launching async sub-agent task '{task_id}' in '{cwd}' (dangerously_skip_permissions={dangerously_skip_permissions}): {prompt[:100]}...")
 
     TASKS[task_id] = {
         "status": "running",
@@ -242,7 +248,13 @@ def start_antigravity_async(
 
     def _worker():
         try:
-            output = execute_antigravity_sync(prompt=prompt, sub_path=sub_path, model=model)
+            output = execute_antigravity_sync(
+                prompt=prompt,
+                sub_path=sub_path,
+                model=model,
+                effort=effort,
+                dangerously_skip_permissions=dangerously_skip_permissions
+            )
             TASKS[task_id]["status"] = "completed"
             TASKS[task_id]["output"] = output
             logger.info(f"Async task '{task_id}' completed successfully")

@@ -50,7 +50,8 @@ Delegate to the `antigravity-bridge` MCP tools whenever a task involves:
 execute_antigravity_sync({
   "prompt": "Fix the syntax error in src/index.ts and run npm test to verify.",
   "sub_path": "my-project",
-  "effort": "low"
+  "effort": "low",
+  "dangerously_skip_permissions": true
 })
 ```
 
@@ -59,6 +60,7 @@ execute_antigravity_sync({
 start_antigravity_async({
   "prompt": "Implement comprehensive unit tests for all functions in utils.py and run pytest.",
   "sub_path": "my-backend",
-  "effort": "low"
+  "effort": "low",
+  "dangerously_skip_permissions": true
 })
 ```
