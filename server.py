@@ -186,7 +186,7 @@ def execute_antigravity_sync(
             cmd.append("--dangerously-skip-permissions")
         if model:
             cmd.extend(["--model", model])
-        if effort:
+        if effort and not any(model.endswith(s) for s in ["-low", "-medium", "-high"]):
             cmd.extend(["--effort", effort])
         if EXTRA_AGY_FLAGS:
             cmd.extend(EXTRA_AGY_FLAGS)
