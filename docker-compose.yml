@@ -1,0 +1,19 @@
+services:
+  antigravity-mcp-bridge:
+    build: .
+    container_name: antigravity-mcp-bridge
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - WORKSPACE_DIR=/workspace
+      - PORT=8080
+      - HOST=0.0.0.0
+      # Pass through Antigravity/Gemini API keys or auth configs
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - ANTIGRAVITY_API_KEY=${ANTIGRAVITY_API_KEY:-}
+    volumes:
+      # Mount workspaces directory from host into container
+      - ./workspaces:/workspace
+      # Optional: Mount agy local config directory if available
+      - ~/.gemini:/root/.gemini
