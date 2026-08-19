@@ -2,18 +2,22 @@ services:
   antigravity-mcp-bridge:
     build: .
     container_name: antigravity-mcp-bridge
-    restart: unless-stopped
+    restart: always
     ports:
-      - "8080:8080"
+      - "${PORT_BINDING:-8085}:8080"
     environment:
       - WORKSPACE_DIR=/workspace
       - PORT=8080
       - HOST=0.0.0.0
-      # Pass through Antigravity/Gemini API keys or auth configs
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini-3.7-flash}
+      - DEFAULT_EFFORT=${DEFAULT_EFFORT:-high}
+      - DEFAULT_TIMEOUT_SECONDS=${DEFAULT_TIMEOUT_SECONDS:-300}
+      - AUTO_APPROVE_PERMISSIONS=${AUTO_APPROVE_PERMISSIONS:-true}
+      - EXTRA_AGY_FLAGS=${EXTRA_AGY_FLAGS:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - ANTIGRAVITY_API_KEY=${ANTIGRAVITY_API_KEY:-}
     volumes:
-      # Mount workspaces directory from host into container
-      - ./workspaces:/workspace
-      # Optional: Mount agy local config directory if available
-      - ~/.gemini:/root/.gemini
+      # Mount host development root into container
+      - ${HOST_WORKSPACE_PATH:-./workspaces}:/workspace
+      # Mount host Gemini config into container
+      - ${HOST_GEMINI_CONFIG_PATH:-~/.gemini}:/root/.gemini

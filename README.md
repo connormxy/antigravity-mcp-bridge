@@ -34,6 +34,20 @@ antigravity-mcp-bridge/
 └── README.md               # Documentation
 ```
 
+## ⚙️ Environment Configuration
+
+You can customize the sub-agent behavior by editing `.env`:
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `DEFAULT_MODEL` | `gemini-3.7-flash` | The model used for sub-agent execution (`gemini-3.7-flash`, `gemini-2.5-flash`, `gemini-2.0-flash`). |
+| `DEFAULT_EFFORT` | `high` | Reasoning effort for `agy` CLI sessions (`low`, `medium`, `high`). |
+| `AUTO_APPROVE_PERMISSIONS` | `true` | When `true`, passes `--dangerously-skip-permissions` (YOLO mode) to avoid interactive prompts. |
+| `DEFAULT_TIMEOUT_SECONDS` | `300` | Execution timeout in seconds. |
+| `EXTRA_AGY_FLAGS` | `""` | Any extra flags to pass directly to `agy` CLI (e.g. `"--sandbox"`). |
+| `WORKSPACE_DIR` | `/workspace` | Sandbox workspace directory inside container. |
+| `GEMINI_API_KEY` | `""` | Optional API key for Google GenAI / Gemini models. |
+
 ---
 
 ## 📦 Quickstart & Deployment
@@ -51,7 +65,7 @@ docker compose up -d --build
 ```
 
 The FastMCP server will start listening on:
-👉 **`http://localhost:8080/sse`** (or your host LAN IP).
+👉 **`http://localhost:8085/sse`** (or your host LAN IP).
 
 ### 3. Verify Container Health
 ```bash
@@ -70,7 +84,7 @@ To expose this Antigravity sub-agent bridge securely to **Google Spark** via you
 ```yaml
     - client_name: "Google Spark"
       server_name: "Antigravity Bridge"
-      server_url: "http://<YOUR_DOCKER_HOST_IP>:8080/sse"
+      server_url: "http://<YOUR_DOCKER_HOST_IP>:8085/sse"
       bearer_token: ""
       client_id: "spark-antigravity"
       client_secret: "secret-antigravity"

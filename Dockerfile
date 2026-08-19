@@ -1,16 +1,20 @@
 FROM python:3.12-slim
 
-# Install system utilities, git, and Node.js/npm (required for agy runtime toolsets)
+# Install system utilities, git, bash, and Node.js/npm
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     nodejs \
     npm \
     ca-certificates \
+    bash \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Antigravity CLI globally
-RUN npm install -g @google/antigravity-cli || true
+# Attempt official Antigravity CLI installation
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash || true
+
+ENV PATH="/root/.local/bin:/root/.antigravity/bin:${PATH}"
 
 WORKDIR /app
 
